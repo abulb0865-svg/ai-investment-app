@@ -1,10 +1,10 @@
 const TelegramBot = require('node-telegram-bot-api');
 
-const token = '8837255512:AAFMmsQ_Kfq945sIfCBmW0rBLRry4yVsxYk';
-// রেন্ডার সার্ভারের লাইভ লিংকটি এখানে আপনার লিংক দিয়ে পরিবর্তন করে নিতে পারেন
+// নতুন টোকেনটি এখানে আপডেট করে দেওয়া হলো
+const token = '8837255512:AAG6BGPbla57NxRz6uRz3-NC1nDlPFDQVF0';
 const webAppUrl = 'https://ai-investment-app-ojpd.onrender.com'; 
 
-// পোলিং চালু রাখা হলো যাতে ইউজাররা বট থেকে রিসিভ করতে পারে
+// পোলিং চালু রাখা হলো যাতে ইউজাররা বট থেকে মেসেজ রিসিভ করতে পারে
 const bot = new TelegramBot(token, { polling: true });
 
 bot.onText(/\/start/, (msg) => {
