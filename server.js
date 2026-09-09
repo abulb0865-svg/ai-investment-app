@@ -1,29 +1,24 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
+const router = express.Router();
+const User = require('../models/User'); // আপনার ইউজারের ডাটাবেজ মডেল
 
-const app = express();
-app.use(express.json());
-app.use(cors());
-app.use(express.static('public'));
+// ইউজারের ব্যালেন্স পাওয়ার এপিআই
+router.get('/user-balance', async (req, res) => {
+    try {
+        const { userId } = req.query;
+        if (!userId) {
+            return res.json({ success: false, message: 'User ID missing' });
+        }
 
-// টেলিগ্রাম বট লোড করা হচ্ছে
-require('./bot');
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.json({ success: false, message: 'User not found' });
+        }
 
-// ক্লাউড ডাটাবেস (MongoDB Atlas) এর জন্য Environment Variable ব্যবহার করা হয়েছে
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/ai-investment-app';
+        res.json({ success: true, balance: user.balance || 0 });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
 
-mongoose.connect(MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => console.log('MongoDB Connected Successfully'))
-.catch(err => console.log('MongoDB Connection Error: ', err));
-
-// রাউটসমূহ
-app.use('/api', require('./routes/authRoutes'));
-app.use('/api', require('./routes/userRoutes'));
-app.use('/api/admin', require('./routes/adminRoutes'));
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+module.exports = router;
