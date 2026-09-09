@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Approve Deposit</title>
+    <title>Admin Panel - Deposit & Withdraw</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,15 +15,21 @@
             height: 100vh;
             margin: 0;
         }
+        .admin-container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+        }
         .admin-card {
             background: #1e293b;
-            padding: 30px;
+            padding: 25px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 400px;
+            flex: 1;
         }
-        h2 {
+        h3 {
             text-align: center;
             margin-bottom: 20px;
             color: #38bdf8;
@@ -45,10 +51,21 @@
             border-radius: 5px;
             box-sizing: border-box;
         }
+        .deposit-btn {
+            background: #22c55e;
+        }
+        .deposit-btn:hover {
+            background: #16a34a;
+        }
+        .withdraw-btn {
+            background: #ef4444;
+        }
+        .withdraw-btn:hover {
+            background: #dc2626;
+        }
         button {
             width: 100%;
             padding: 10px;
-            background: #22c55e;
             border: none;
             color: white;
             font-size: 16px;
@@ -57,68 +74,91 @@
             font-weight: bold;
             margin-top: 10px;
         }
-        button:hover {
-            background: #16a34a;
-        }
-        #message {
+        .message {
             margin-top: 15px;
             text-align: center;
-            font-size: 14px;
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
 
-    <div class="admin-card">
-        <h2>Admin Approval Panel</h2>
-        <div class="form-group">
-            <label for="userId">User ID:</label>
-            <input type="text" id="userId" placeholder="ইউজারের MongoDB ID দিন">
+    <div class="admin-container">
+        <!-- ডিপোজিট সেকশন -->
+        <div class="admin-card">
+            <h3>Approve Deposit</h3>
+            <div class="form-group">
+                <label>User ID:</label>
+                <input type="text" id="depUserId" placeholder="User MongoDB ID">
+            </div>
+            <div class="form-group">
+                <label>Amount:</label>
+                <input type="number" id="depAmount" placeholder="Deposit Amount">
+            </div>
+            <button class="deposit-btn" onclick="handleAction('deposit')">Add Balance</button>
+            <div id="depMessage" class="message"></div>
         </div>
-        <div class="form-group">
-            <label for="depositAmount">Deposit Amount (BDT/USD):</label>
-            <input type="number" id="depositAmount" placeholder="টাকার পরিমাণ দিন (যেমন: 7040)">
+
+        <!-- উইথড্র সেকশন -->
+        <div class="admin-card">
+            <h3>Approve Withdraw</h3>
+            <div class="form-group">
+                <label>User ID:</label>
+                <input type="text" id="withUserId" placeholder="User MongoDB ID">
+            </div>
+            <div class="form-group">
+                <label>Amount:</label>
+                <input type="number" id="withAmount" placeholder="Withdraw Amount">
+            </div>
+            <button class="withdraw-btn" onclick="handleAction('withdraw')">Deduct Balance</button>
+            <div id="withMessage" class="message"></div>
         </div>
-        <button onclick="approveDeposit()">Approve Deposit</button>
-        <div id="message"></div>
     </div>
 
     <script>
-        async function approveDeposit() {
-            const userId = document.getElementById('userId').value.trim();
-            const depositAmount = parseFloat(document.getElementById('depositAmount').value);
-            const messageDiv = document.getElementById('message');
+        async function handleAction(type) {
+            let userId, amount, endpoint, messageId;
 
-            if (!userId || isNaN(depositAmount)) {
-                messageDiv.style.color = '#ef4444';
-                messageDiv.innerText = 'দয়া করে সঠিক User ID এবং Amount দিন!';
+            if (type === 'deposit') {
+                userId = document.getElementById('depUserId').value.trim();
+                amount = parseFloat(document.getElementById('depAmount').value);
+                endpoint = '/api/admin/approve-deposit';
+                messageId = document.getElementById('depMessage');
+            } else {
+                userId = document.getElementById('withUserId').value.trim();
+                amount = parseFloat(document.getElementById('withAmount').value);
+                endpoint = '/api/admin/approve-withdraw';
+                messageId = document.getElementById('withMessage');
+            }
+
+            if (!userId || isNaN(amount)) {
+                messageId.style.color = '#ef4444';
+                messageId.innerText = 'দয়া করে সঠিক User ID এবং Amount দিন!';
                 return;
             }
 
-            messageDiv.style.color = '#38bdf8';
-            messageDiv.innerText = 'প্রক্রিয়াধীন আছে...';
+            messageId.style.color = '#38bdf8';
+            messageId.innerText = 'প্রক্রিয়াধীন আছে...';
 
             try {
-                const response = await fetch('/api/admin/approve-deposit', {
+                const response = await fetch(endpoint, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ userId, depositAmount })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(type === 'deposit' ? { userId, depositAmount: amount } : { userId, withdrawAmount: amount })
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    messageDiv.style.color = '#22c55e';
-                    messageDiv.innerText = data.message;
+                    messageId.style.color = '#22c55e';
+                    messageId.innerText = data.message;
                 } else {
-                    messageDiv.style.color = '#ef4444';
-                    messageDiv.innerText = 'ত্রুটি: ' + data.message;
+                    messageId.style.color = '#ef4444';
+                    messageId.innerText = 'ত্রুটি: ' + data.message;
                 }
             } catch (error) {
-                messageDiv.style.color = '#ef4444';
-                messageDiv.innerText = 'সার্ভারে কানেক্ট করা যায়নি!';
+                messageId.style.color = '#ef4444';
+                messageId.innerText = 'সার্ভারে কানেক্ট করা যায়নি!';
             }
         }
     </script>
