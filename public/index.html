@@ -117,10 +117,25 @@
     </div>
 
     <script>
+        // টেলিগ্রাম থেকে ইউজার আইডি তোলার কোড যুক্ত করা হলো
+        function getUserId() {
+            let userId = localStorage.getItem('userId');
+            if (!userId) {
+                // টেলিগ্রাম ওয়েব অ্যাপ থেকে ইউজার আইডি নেওয়ার চেষ্টা
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+                    userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString();
+                    localStorage.setItem('userId', userId);
+                } else {
+                    // টেস্টের জন্য ডিফল্ট একটি আইডি সেট করা (যদি টেলিগ্রামের বাইরে ব্রাউজারে ওপেন করা হয়)
+                    userId = '123456789';
+                    localStorage.setItem('userId', userId);
+                }
+            }
+            return userId;
+        }
+
         async function loadBalance() {
-            const userId = localStorage.getItem('userId');
-            if (!userId) return;
-            
+            const userId = getUserId();
             try {
                 const response = await fetch(`/api/user-balance?userId=${userId}`);
                 const data = await response.json();
@@ -133,6 +148,7 @@
         }
 
         window.onload = function() {
+            getUserId();
             loadBalance();
         };
 
@@ -159,9 +175,9 @@
 
         async function submitDeposit() {
             const usdAmount = document.getElementById('depositUsd').value;
-            const bdtAmount = usdAmount ? (usdAmount * 128).toFixed(2) : 0;
+            const amount = usdAmount ? (usdAmount * 128).toFixed(2) : 0; // BDT amount
             const trxId = document.getElementById('trxIdInput').value;
-            const userId = localStorage.getItem('userId');
+            const userId = getUserId();
 
             if(!usdAmount || !trxId) { 
                 alert('Please enter amount and Order ID!'); 
@@ -169,10 +185,11 @@
             }
 
             try {
+                // এখানে সঠিক /api/deposit রাউটে ফেচ কল করা হচ্ছে
                 const response = await fetch('/api/deposit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, usdAmount, bdtAmount, trxId })
+                    body: JSON.stringify({ userId, amount, usdAmount, trxId })
                 });
                 const data = await response.json();
                 
@@ -183,19 +200,17 @@
                     document.getElementById('trxIdInput').value = '';
                     document.getElementById('convertedBdt').innerText = '0';
                     switchTab('home');
+                    loadBalance();
                 }
             } catch (err) { 
-                alert('Deposit request submitted for ' + bdtAmount + ' BDT (' + usdAmount + ' USD)! Waiting for admin approval.');
-                document.getElementById('depositUsd').value = '';
-                document.getElementById('trxIdInput').value = '';
-                document.getElementById('convertedBdt').innerText = '0';
-                switchTab('home');
+                alert('Server connection error!');
             }
         }
 
         async function claimCheckIn() {
-            const userId = localStorage.getItem('userId');
+            const userId = getUserId();
             try {
+                // সঠিক /api/daily-check-in রাউটে ফেচ কল
                 const response = await fetch('/api/daily-check-in', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -210,12 +225,13 @@
         async function submitWithdraw() {
             const amount = document.getElementById('withdrawAmount').value;
             const binancePayId = document.getElementById('binancePayId').value;
-            const userId = localStorage.getItem('userId');
+            const userId = getUserId();
 
             if(!amount || amount < 350) { alert('Minimum withdrawal amount is 350 BDT!'); return; }
             if(!binancePayId) { alert('Please enter your Binance Pay ID!'); return; }
 
             try {
+                // সঠিক /api/withdraw রাউটে ফেচ কল
                 const response = await fetch('/api/withdraw', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
