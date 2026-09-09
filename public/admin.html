@@ -16,30 +16,129 @@
         }
     </script>
 </head>
-<body class="bg-darkBg text-white font-sans p-4 space-y-6">
+<body class="bg-darkBg text-white font-sans p-4 space-y-6 pb-20">
     <h1 class="text-xl font-bold text-accentBlue mb-4"><i class="fa-solid fa-user-shield"></i> Admin Control Panel</h1>
+    
+    <!-- Pending Deposits Section -->
     <div class="bg-cardBg rounded-2xl p-4 border border-gray-800 space-y-3">
         <h2 class="text-sm font-bold text-white border-b border-gray-800 pb-2">Pending Deposits (Binance Pay)</h2>
-        <div class="flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-800 text-xs">
-            <div>
-                <p class="font-bold text-white">User ID: sample_user_id</p>
-                <p class="text-neonGreen font-semibold">Amount: 1280 BDT (10 USD)</p>
-            </div>
-            <button onclick="approveDeposit('SAMPLE_USER_ID', 1280)" class="bg-neonGreen/20 text-neonGreen px-3 py-1.5 rounded-lg font-bold">Approve</button>
+        <div id="depositListContainer" class="space-y-3">
+            <p class="text-xs text-gray-400">Loading pending deposits...</p>
         </div>
     </div>
+
+    <!-- Pending Withdrawals Section -->
+    <div class="bg-cardBg rounded-2xl p-4 border border-gray-800 space-y-3 mt-6">
+        <h2 class="text-sm font-bold text-white border-b border-gray-800 pb-2">Pending Withdrawals</h2>
+        <div id="withdrawListContainer" class="space-y-3">
+            <p class="text-xs text-gray-400">Loading pending withdrawals...</p>
+        </div>
+    </div>
+
     <script>
-        async function approveDeposit(userId, depositAmount) {
+        // ১. পেন্ডিং ডিপোজিট লোড করা
+        async function loadPendingDeposits() {
+            try {
+                const response = await fetch('/api/admin/deposits');
+                const deposits = await response.json();
+                
+                const container = document.getElementById('depositListContainer');
+                container.innerHTML = '';
+
+                if (!deposits || deposits.length === 0) {
+                    container.innerHTML = '<p class="text-xs text-gray-400">No pending deposits found.</p>';
+                    return;
+                }
+
+                deposits.forEach(dep => {
+                    const item = document.createElement('div');
+                    item.className = 'flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-800 text-xs';
+                    item.innerHTML = `
+                        <div>
+                            <p class="font-bold text-white">User ID: <span class="font-mono text-gray-300">${dep.userId}</span></p>
+                            <p class="text-neonGreen font-semibold">Amount: ${dep.bdtAmount || dep.amount} BDT</p>
+                            <p class="text-[10px] text-gray-400">TxID: ${dep.trxId || 'N/A'}</p>
+                        </div>
+                        <button onclick="approveDeposit('${dep._id}')" class="bg-neonGreen/20 text-neonGreen px-3 py-1.5 rounded-lg font-bold hover:bg-neonGreen/30">Approve</button>
+                    `;
+                    container.appendChild(item);
+                });
+            } catch (err) {
+                console.error('Error loading deposits:', err);
+                document.getElementById('depositListContainer').innerHTML = '<p class="text-xs text-red-400">Failed to load deposits.</p>';
+            }
+        }
+
+        // ২. পেন্ডিং উইথড্রল লোড করা
+        async function loadPendingWithdrawals() {
+            try {
+                const response = await fetch('/api/admin/withdrawals');
+                const withdrawals = await response.json();
+                
+                const container = document.getElementById('withdrawListContainer');
+                container.innerHTML = '';
+
+                if (!withdrawals || withdrawals.length === 0) {
+                    container.innerHTML = '<p class="text-xs text-gray-400">No pending withdrawals found.</p>';
+                    return;
+                }
+
+                withdrawals.forEach(wd => {
+                    const item = document.createElement('div');
+                    item.className = 'flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-800 text-xs';
+                    item.innerHTML = `
+                        <div>
+                            <p class="font-bold text-white">User ID: <span class="font-mono text-gray-300">${wd.userId}</span></p>
+                            <p class="text-accentBlue font-semibold">Amount: ${wd.amount} BDT</p>
+                            <p class="text-[10px] text-gray-400">Binance Pay ID: ${wd.binancePayId || 'N/A'}</p>
+                        </div>
+                        <button onclick="approveWithdraw('${wd._id}')" class="bg-accentBlue/20 text-accentBlue px-3 py-1.5 rounded-lg font-bold hover:bg-accentBlue/30">Approve</button>
+                    `;
+                    container.appendChild(item);
+                });
+            } catch (err) {
+                console.error('Error loading withdrawals:', err);
+                document.getElementById('withdrawListContainer').innerHTML = '<p class="text-xs text-red-400">Failed to load withdrawals.</p>';
+            }
+        }
+
+        // ডিপোজিট অ্যাপ্রুভ করার ফাংশন
+        async function approveDeposit(depositId) {
             try {
                 const response = await fetch('/api/admin/approve-deposit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, depositAmount })
+                    body: JSON.stringify({ depositId })
                 });
                 const data = await response.json();
                 alert(data.message);
+                if(data.success) {
+                    loadPendingDeposits();
+                }
             } catch (err) { alert('Server connection error!'); }
         }
+
+        // উইথড্র অ্যাপ্রুভ করার ফাংশন
+        async function approveWithdraw(withdrawId) {
+            try {
+                const response = await fetch('/api/admin/approve-withdraw', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ withdrawId })
+                });
+                const data = await response.json();
+                alert(data.message);
+                if(data.success) {
+                    loadPendingWithdrawals();
+                }
+            } catch (err) { alert('Server connection error!'); }
+        }
+
+        // পেজ লোড হলেই উভয় লিস্ট ফেচ করবে
+        window.onload = function() {
+            loadPendingDeposits();
+            loadPendingWithdrawals();
+        };
     </script>
 </body>
 </html>
