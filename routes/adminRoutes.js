@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const Deposit = require('../models/Deposit');
 const Withdraw = require('../models/Withdraw');
@@ -24,7 +25,7 @@ router.get('/withdrawals', async (req, res) => {
     }
 });
 
-// ৩. ডিপোজিট অ্যাপ্রুভ করার রাউট
+// ৩. ডিপোজিট অ্যাপ্রুভ করার রাউট (সঠিক আইডি ম্যাচিং সহ)
 router.post('/approve-deposit', async (req, res) => {
     try {
         const { depositId } = req.body;
@@ -39,16 +40,24 @@ router.post('/approve-deposit', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Deposit already approved' });
         }
 
-        let user = await User.findOne({ userId: deposit.userId }) || await User.findOne({ _id: deposit.userId.length === 24 ? deposit.userId : null });
+        // ইউজার খোঁজার নিরাপদ লজিক
+        let user = await User.findOne({ userId: deposit.userId });
         
-        if (!user) {
-            user = await User.findOne(); 
+        if (!user && mongoose.Types.ObjectId.isValid(deposit.userId)) {
+            user = await User.findById(deposit.userId);
         }
 
-        if (user) {
-            user.balance = (Number(user.balance) || 0) + (Number(deposit.amount) || 0);
-            await user.save();
+        if (!user) {
+            user = await User.findOne();
         }
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found in database for this deposit!' });
+        }
+
+        // ব্যালেন্স আপডেট করা
+        user.balance = (Number(user.balance) || 0) + (Number(deposit.amount) || 0);
+        await user.save();
 
         deposit.status = 'approved';
         await deposit.save();
