@@ -1,10 +1,9 @@
 const TelegramBot = require('node-telegram-bot-api');
 
-// নতুন টোকেনটি এখানে আপডেট করে দেওয়া হলো
-const token = '8837255512:AAG6BGPbla57NxRz6uRz3-NC1nDlPFDQVF0';
+// BotFather থেকে পাওয়া একদম সঠিক টোকেনটি এখানে বসাবেন
+const token = 'আপনার_বটফেদার_থেকে_পাওয়া_সঠিক_টোকেনটি_এখানে_দিন';
 const webAppUrl = 'https://ai-investment-app-ojpd.onrender.com'; 
 
-// পোলিং চালু রাখা হলো যাতে ইউজাররা বট থেকে মেসেজ রিসিভ করতে পারে
 const bot = new TelegramBot(token, { polling: true });
 
 bot.onText(/\/start/, (msg) => {
