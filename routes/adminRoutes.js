@@ -25,7 +25,7 @@ router.get('/withdrawals', async (req, res) => {
     }
 });
 
-// ৩. ডিপোজিট অ্যাপ্রুভ করার রাউট (সঠিক আইডি ম্যাচিং সহ)
+// ৩. ডিপোজিট অ্যাপ্রুভ করার রাউট (সঠিক এবং পাকা আইডি ম্যাচিং সহ)
 router.post('/approve-deposit', async (req, res) => {
     try {
         const { depositId } = req.body;
@@ -40,22 +40,27 @@ router.post('/approve-deposit', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Deposit already approved' });
         }
 
-        // ইউজার খোঁজার নিরাপদ লজিক
-        let user = await User.findOne({ userId: deposit.userId });
-        
-        if (!user && mongoose.Types.ObjectId.isValid(deposit.userId)) {
+        // সরাসরি Deposit-এ থাকা userId কে ইউজারের _id ধরে খোঁজা
+        let user = null;
+        if (mongoose.Types.ObjectId.isValid(deposit.userId)) {
             user = await User.findById(deposit.userId);
         }
 
+        // যদি এভাবে না পাওয়া যায়, তবে অন্য ফিল্ড দিয়ে খোঁজা
         if (!user) {
-            user = await User.findOne();
+            user = await User.findOne({ 
+                $or: [
+                    { userId: deposit.userId },
+                    { telegramId: deposit.userId }
+                ]
+            });
         }
 
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found in database for this deposit!' });
         }
 
-        // ব্যালেন্স আপডেট করা
+        // ইউজারের ব্যালেন্স সঠিকভাবে আপডেট করা
         user.balance = (Number(user.balance) || 0) + (Number(deposit.amount) || 0);
         await user.save();
 
