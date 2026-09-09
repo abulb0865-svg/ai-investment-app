@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const Deposit = require('../models/Deposit'); // ডিপোজিট মডেল ইমপোর্ট করা হলো
-const Withdraw = require('../models/Withdraw'); // উইথড্র মডেল ইমপোর্ট করা হলো
+const Deposit = require('../models/Deposit'); 
+const Withdraw = require('../models/Withdraw'); 
 
-// হেল্পার ফাংশন: ইউজার খুঁজে না পেলে অটো তৈরি করার জন্য বা বিভিন্ন ফরম্যাটের আইডি হ্যান্ডেল করতে
+// হেল্পার ফাংশন: ইউজার খুঁজে না পেলে অটো তৈরি করার জন্য
 async function findOrCreateUser(identifier) {
     if (!identifier) return null;
     let user = await User.findOne({ 
@@ -24,18 +24,17 @@ router.post('/deposit', async (req, res) => {
         
         let user = await findOrCreateUser(userId);
         if (!user) {
-            // যদি ইউজার ডাটাবেজে না থাকে, তবে ডামি পাসওয়ার্ড ও ফোন নম্বর দিয়ে অটো রেজিস্টার করে নেওয়া
+            // ইউনিক ফোন ও পাসওয়ার্ড সেট করা যাতে duplicate key error না আসে
             user = new User({ 
                 telegramId: userId, 
                 userId: userId, 
                 balance: 0,
-                password: 'telegram_auth_user', 
-                phone: 'N/A' 
+                password: 'telegram_auth_' + userId, 
+                phone: 'tg_' + userId + '_' + Date.now() 
             });
             await user.save();
         }
 
-        // ডাটাবেজে পেন্ডিং ডিপোজিট হিসেবে সেভ করা
         const newDeposit = new Deposit({
             userId: user._id,
             amount: amount || 0,
@@ -63,8 +62,8 @@ router.post('/withdraw', async (req, res) => {
                 telegramId: userId, 
                 userId: userId, 
                 balance: 0,
-                password: 'telegram_auth_user', 
-                phone: 'N/A' 
+                password: 'telegram_auth_' + userId, 
+                phone: 'tg_' + userId + '_' + Date.now() 
             });
             await user.save();
         }
@@ -73,11 +72,9 @@ router.post('/withdraw', async (req, res) => {
         if (user.balance < amount) return res.status(400).json({ success: false, message: 'Insufficient balance' });
         if (!binancePayId) return res.status(400).json({ success: false, message: 'Binance Pay ID is required' });
 
-        // ব্যালেন্স কেটে নেওয়া
         user.balance -= amount;
         await user.save();
 
-        // অ্যাডমিন প্যানেলে দেখানোর জন্য Withdraw মডেলে সেভ করা
         const newWithdraw = new Withdraw({
             userId: user._id,
             amount,
@@ -103,8 +100,8 @@ router.post('/daily-check-in', async (req, res) => {
                 telegramId: userId, 
                 userId: userId, 
                 balance: 0,
-                password: 'telegram_auth_user', 
-                phone: 'N/A' 
+                password: 'telegram_auth_' + userId, 
+                phone: 'tg_' + userId + '_' + Date.now() 
             });
             await user.save();
         }
