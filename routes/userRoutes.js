@@ -1,7 +1,36 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Deposit = require('../models/Deposit'); // ডিপোজিট মডেল ইমপোর্ট করা হলো
+const Withdraw = require('../models/Withdraw'); // উইথড্র মডেল ইমপোর্ট করা হলো
 
+// ১. ডিপোজিট রিকোয়েস্ট সাবমিট করার রাউট (নতুন যুক্ত করা হয়েছে)
+router.post('/deposit', async (req, res) => {
+    try {
+        const { userId, amount, usdAmount, trxId } = req.body;
+        
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+        // ডাটাবেজে পেন্ডিং ডিপোজিট হিসেবে সেভ করা
+        const newDeposit = new Deposit({
+            userId,
+            amount: amount || 0,
+            usdAmount: usdAmount || 0,
+            trxId: trxId || 'N/A',
+            status: 'pending'
+        });
+
+        await newDeposit.save();
+
+        res.status(200).json({ success: true, message: 'Deposit request submitted successfully! Waiting for admin approval.' });
+    } catch (error) {
+        console.error('Deposit error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ২. উইথড্র রিকোয়েস্ট সাবমিট করার রাউট
 router.post('/withdraw', async (req, res) => {
     try {
         const { userId, amount, binancePayId } = req.body;
@@ -12,14 +41,27 @@ router.post('/withdraw', async (req, res) => {
         if (user.balance < amount) return res.status(400).json({ success: false, message: 'Insufficient balance' });
         if (!binancePayId) return res.status(400).json({ success: false, message: 'Binance Pay ID is required' });
 
+        // ব্যালেন্স কেটে নেওয়া
         user.balance -= amount;
         await user.save();
+
+        // অ্যাডমিন প্যানেলে দেখানোর জন্য Withdraw মডেলে সেভ করা
+        const newWithdraw = new Withdraw({
+            userId,
+            amount,
+            binancePayId,
+            status: 'pending'
+        });
+        await newWithdraw.save();
+
         res.status(200).json({ success: true, message: 'Withdrawal request submitted successfully to Binance Pay!' });
     } catch (error) {
+        console.error('Withdraw error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
+// ৩. ডেইলি চেক-ইন রাউট
 router.post('/daily-check-in', async (req, res) => {
     try {
         const { userId } = req.body;
