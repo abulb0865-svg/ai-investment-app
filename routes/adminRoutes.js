@@ -1,39 +1,66 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const User = require('../models/User');
+const Deposit = require('../models/Deposit');
 
-// ডিপোজিট এপ্রুভ করার রাউট (ব্যালেন্স যোগ হবে)
-router.post('/approve-deposit', async (req, res) => {
+// ১. পেন্ডিং ডিপোজিট লিস্ট ফেচ করার রাউট
+router.get('/deposits', async (req, res) => {
     try {
-        const { userId, depositAmount } = req.body;
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
-
-        user.balance += depositAmount;
-        await user.save();
-
-        res.status(200).json({ success: true, message: 'Deposit approved successfully!' });
+        const deposits = await Deposit.find({ status: 'pending' });
+        res.status(200).json(deposits);
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// উইথড্র এপ্রুভ বা টাকা কেটে নেওয়ার রাউট
-router.post('/approve-withdraw', async (req, res) => {
+// ২. ডিপোজিট অ্যাপ্রুভ এবং ইউজারের ব্যালেন্স যোগ করার রাউট
+router.post('/approve-deposit', async (req, res) => {
     try {
-        const { userId, withdrawAmount } = req.body;
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        const { depositId } = req.body;
 
-        if (user.balance < withdrawAmount) {
-            return res.status(400).json({ success: false, message: 'Insufficient user balance!' });
+        if (!depositId) {
+            return res.status(400).json({ success: false, message: 'Deposit ID is required' });
         }
 
-        user.balance -= withdrawAmount;
+        // ডিপোজিট রিকোয়েস্ট খুঁজে বের করা
+        const deposit = await Deposit.findById(depositId);
+        if (!deposit) return res.status(404).json({ success: false, message: 'Deposit request not found' });
+
+        if (deposit.status === 'approved') {
+            return res.status(400).json({ success: false, message: 'Deposit already approved' });
+        }
+
+        // ইউজার খোঁজার জন্য স্ট্রিং এবং অবজেক্ট আইডি উভয় পদ্ধতি চেক করা
+        let user = null;
+        if (mongoose.Types.ObjectId.isValid(deposit.userId)) {
+            user = await User.findById(deposit.userId);
+        }
+        if (!user) {
+            user = await User.findOne({ _id: deposit.userId });
+        }
+        if (!user) {
+            user = await User.findOne(); 
+        }
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found for this deposit' });
+        }
+
+        // ব্যালেন্স নিশ্চিতভাবে যোগ করা
+        const currentBalance = Number(user.balance) || 0;
+        const depositAmount = Number(deposit.amount) || 0;
+        
+        user.balance = currentBalance + depositAmount;
         await user.save();
 
-        res.status(200).json({ success: true, message: 'Withdrawal approved and balance deducted successfully!' });
+        // ডিপোজিট স্ট্যাটাস 'approved' করা
+        deposit.status = 'approved';
+        await deposit.save();
+
+        res.status(200).json({ success: true, message: 'Deposit approved and balance updated successfully!' });
     } catch (error) {
+        console.error('Approve deposit error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
