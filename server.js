@@ -7,9 +7,9 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
 
-const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/ai-investment-app';
+require('./bot');
 
-mongoose.connect(mongoURI, {
+mongoose.connect('mongodb://localhost:27017/ai-investment-app', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => console.log('MongoDB Connected')).catch(err => console.log(err));
