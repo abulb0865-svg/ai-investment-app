@@ -7,13 +7,21 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
 
+// টেলিগ্রাম বট লোড করা হচ্ছে
 require('./bot');
 
-mongoose.connect('mongodb://localhost:27017/ai-investment-app', {
+// ক্লাউড ডাটাবেস (MongoDB Atlas) এর জন্য Environment Variable ব্যবহার করা হয়েছে
+// যদি লোকাল পিসিতে চালান তবে লোকাল লিংক কাজ করবে, আর Render-এ চালালে MONGO_URI কাজ করবে
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/ai-investment-app';
+
+mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
-}).then(() => console.log('MongoDB Connected')).catch(err => console.log(err));
+})
+.then(() => console.log('MongoDB Connected Successfully'))
+.catch(err => console.log('MongoDB Connection Error: ', err));
 
+// রাউটসমূহ
 app.use('/api', require('./routes/authRoutes'));
 app.use('/api', require('./routes/userRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
