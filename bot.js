@@ -7,13 +7,13 @@ bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
     const userName = msg.from.first_name || 'User';
 
-    bot.sendMessage(chatId, `স্বাগতম ${userName}! AI Investment Mini App-এ আপনাকে স্বাগতম। নিচে ক্লিক করে আপনার অ্যাপ ওপেন করুন:`, {
+    bot.sendMessage(chatId, `স্বাগতম ${userName}! AI Investment Mini App-A আপনাকে স্বাগতম। নিচে ক্লিক করে আপনার অ্যাপ ওপেন করুন:`, {
         reply_markup: {
             inline_keyboard: [
                 [
                     {
                         text: "🚀 Open App",
-                        web_app: { url: "https://your-domain.com" }
+                        web_app: { url: "https://ai-investment-app-fasr.onrender.com" }
                     }
                 ]
             ]
