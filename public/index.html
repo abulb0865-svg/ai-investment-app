@@ -117,16 +117,20 @@
     </div>
 
     <script>
-        // যেকোনো ইউজারের জন্য আলাদা ও সঠিক আইডি জেনারেট বা টেলিগ্রাম থেকে নেওয়ার লজিক
+        // রিয়েল টেলিগ্রাম ইউজার আইডি বা ইউনিক আইডি তোলার ডাইনামিক লজিক
         function getUserId() {
             let userId = localStorage.getItem('userId');
+            
             if (!userId) {
-                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+                // ১. যদি ইউজার টেলিগ্রাম মিনি অ্যাপের ভেতর থেকে ঢোকে, তবে তার আসল টেলিগ্রাম আইডি নেওয়া হবে
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user && window.Telegram.WebApp.initDataUnsafe.user.id) {
                     userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString();
-                } else {
-                    // ব্রাউজারে টেস্ট করলে প্রতি ইউজারের জন্য ইউনিক আইডি তৈরি হবে
-                    userId = 'user_' + Math.random().toString(36).substring(2, 11);
+                } 
+                else {
+                    // ২. সাধারণ ব্রাউজারে টেস্ট করলে প্রতিটি ইউজারের জন্য আলাদা ইউনিক আইডি তৈরি হবে
+                    userId = 'user_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
                 }
+                
                 localStorage.setItem('userId', userId);
             }
             return userId;
@@ -244,4 +248,4 @@
         }
     </script>
 </body>
-</html>
+    </html>
