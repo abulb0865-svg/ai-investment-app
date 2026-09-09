@@ -1,19 +1,46 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Deposit = require('../models/Deposit');
 
-router.post('/approve-deposit', async (req, res) => {
+// ১. পেন্ডিং ডিপোজিট লিস্ট ফেচ করার রাউট
+router.get('/deposits', async (req, res) => {
     try {
-        const { userId, depositAmount } = req.body;
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
-
-        user.balance += depositAmount;
-        await user.save();
-
-        res.status(200).json({ success: true, message: 'Deposit approved successfully!' });
+        const deposits = await Deposit.find({ status: 'pending' });
+        res.status(200).json(deposits);
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
+// ২. ডিপোজিট অ্যাপ্রুভ এবং ইউজারের ব্যালেন্স যোগ করার রাউট
+router.post('/approve-deposit', async (req, res) => {
+    try {
+        const { depositId } = req.body;
+
+        // ডিপোজিট রিকোয়েস্ট খুঁজে বের করা
+        const deposit = await Deposit.findById(depositId);
+        if (!deposit) return res.status(404).json({ success: false, message: 'Deposit request not found' });
+
+        if (deposit.status === 'approved') {
+            return res.status(400).json({ success: false, message: 'Deposit already approved' });
+        }
+
+        // ইউজারকে খুঁজে বের করা এবং ব্যালেন্স যোগ করা
+        const user = await User.findById(deposit.userId);
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+        user.balance += deposit.amount;
+        await user.save();
+
+        // ডিপোজিট স্ট্যাটাস 'approved' করা
+        deposit.status = 'approved';
+        await deposit.save();
+
+        res.status(200).json({ success: true, message: 'Deposit approved and balance updated successfully!' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 module.exports = router;
