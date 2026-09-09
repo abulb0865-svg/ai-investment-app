@@ -11,7 +11,6 @@ app.use(express.static('public'));
 require('./bot');
 
 // ক্লাউড ডাটাবেস (MongoDB Atlas) এর জন্য Environment Variable ব্যবহার করা হয়েছে
-// যদি লোকাল পিসিতে চালান তবে লোকাল লিংক কাজ করবে, আর Render-এ চালালে MONGO_URI কাজ করবে
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/ai-investment-app';
 
 mongoose.connect(MONGO_URI, {
