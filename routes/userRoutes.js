@@ -24,8 +24,14 @@ router.post('/deposit', async (req, res) => {
         
         let user = await findOrCreateUser(userId);
         if (!user) {
-            // যদি ইউজার ডাটাবেজে না থাকে, তবে অটো রেজিস্টার করে নেওয়া
-            user = new User({ telegramId: userId, userId: userId, balance: 0 });
+            // যদি ইউজার ডাটাবেজে না থাকে, তবে ডামি পাসওয়ার্ড ও ফোন নম্বর দিয়ে অটো রেজিস্টার করে নেওয়া
+            user = new User({ 
+                telegramId: userId, 
+                userId: userId, 
+                balance: 0,
+                password: 'telegram_auth_user', 
+                phone: 'N/A' 
+            });
             await user.save();
         }
 
@@ -53,7 +59,13 @@ router.post('/withdraw', async (req, res) => {
         const { userId, amount, binancePayId } = req.body;
         let user = await findOrCreateUser(userId);
         if (!user) {
-            user = new User({ telegramId: userId, userId: userId, balance: 0 });
+            user = new User({ 
+                telegramId: userId, 
+                userId: userId, 
+                balance: 0,
+                password: 'telegram_auth_user', 
+                phone: 'N/A' 
+            });
             await user.save();
         }
 
@@ -87,7 +99,13 @@ router.post('/daily-check-in', async (req, res) => {
         const { userId } = req.body;
         let user = await findOrCreateUser(userId);
         if (!user) {
-            user = new User({ telegramId: userId, userId: userId, balance: 0 });
+            user = new User({ 
+                telegramId: userId, 
+                userId: userId, 
+                balance: 0,
+                password: 'telegram_auth_user', 
+                phone: 'N/A' 
+            });
             await user.save();
         }
 
