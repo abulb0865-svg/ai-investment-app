@@ -117,20 +117,15 @@
     </div>
 
     <script>
-        // রিয়েল টেলিগ্রাম ইউজার আইডি বা ইউনিক আইডি তোলার ডাইনামিক লজিক
+        // আপডেট করা ডাইনামিক ইউজার আইডি লজিক (পুরোনো ভুল আইডি স্বয়ংক্রিয়ভাবে মুছে ফেলবে)
         function getUserId() {
-            let userId = localStorage.getItem('userId');
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user && window.Telegram.WebApp.initDataUnsafe.user.id) {
+                return window.Telegram.WebApp.initDataUnsafe.user.id.toString();
+            }
             
-            if (!userId) {
-                // ১. যদি ইউজার টেলিগ্রাম মিনি অ্যাপের ভেতর থেকে ঢোকে, তবে তার আসল টেলিগ্রাম আইডি নেওয়া হবে
-                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user && window.Telegram.WebApp.initDataUnsafe.user.id) {
-                    userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString();
-                } 
-                else {
-                    // ২. সাধারণ ব্রাউজারে টেস্ট করলে প্রতিটি ইউজারের জন্য আলাদা ইউনিক আইডি তৈরি হবে
-                    userId = 'user_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-                }
-                
+            let userId = localStorage.getItem('userId');
+            if (!userId || userId === '6aa19c3bea7b98188aa6a36d') {
+                userId = 'user_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
                 localStorage.setItem('userId', userId);
             }
             return userId;
@@ -248,4 +243,4 @@
         }
     </script>
 </body>
-    </html>
+</html>
