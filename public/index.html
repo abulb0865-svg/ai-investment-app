@@ -117,17 +117,16 @@
     </div>
 
     <script>
-        // টেলিগ্রাম থেকে ইউজার আইডি তোলার কোড যুক্ত করা হলো
+        // ইউজার আইডি তোলার নিখুঁত লজিক
         function getUserId() {
             let userId = localStorage.getItem('userId');
             if (!userId) {
-                // টেলিগ্রাম ওয়েব অ্যাপ থেকে ইউজার আইডি নেওয়ার চেষ্টা
                 if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
                     userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString();
                     localStorage.setItem('userId', userId);
                 } else {
-                    // টেস্টের জন্য ডিফল্ট একটি আইডি সেট করা (যদি টেলিগ্রামের বাইরে ব্রাউজারে ওপেন করা হয়)
-                    userId = '123456789';
+                    // ব্রাউজার টেস্টের জন্য আপনার অ্যাডমিন প্যানেলে দেখানো আসল আইডিটি এখানে সেট করা হলো
+                    userId = '6aa19c3b7b98188aa6a36d';
                     localStorage.setItem('userId', userId);
                 }
             }
@@ -175,7 +174,7 @@
 
         async function submitDeposit() {
             const usdAmount = document.getElementById('depositUsd').value;
-            const amount = usdAmount ? (usdAmount * 128).toFixed(2) : 0; // BDT amount
+            const amount = usdAmount ? (usdAmount * 128).toFixed(2) : 0; 
             const trxId = document.getElementById('trxIdInput').value;
             const userId = getUserId();
 
@@ -185,7 +184,6 @@
             }
 
             try {
-                // এখানে সঠিক /api/deposit রাউটে ফেচ কল করা হচ্ছে
                 const response = await fetch('/api/deposit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -210,7 +208,6 @@
         async function claimCheckIn() {
             const userId = getUserId();
             try {
-                // সঠিক /api/daily-check-in রাউটে ফেচ কল
                 const response = await fetch('/api/daily-check-in', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -231,7 +228,6 @@
             if(!binancePayId) { alert('Please enter your Binance Pay ID!'); return; }
 
             try {
-                // সঠিক /api/withdraw রাউটে ফেচ কল
                 const response = await fetch('/api/withdraw', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
