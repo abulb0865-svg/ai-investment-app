@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Sign Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0b1329] text-white font-sans flex items-center justify-center min-h-screen px-4">
+    <div class="bg-[#111c38] p-6 rounded-2xl border border-gray-800 w-full max-w-sm space-y-4 shadow-xl">
+        <h2 id="formTitle" class="text-xl font-bold text-center text-[#00f2fe]">Login to Account</h2>
+        <div class="space-y-1">
+            <label class="text-xs text-gray-400">Phone Number</label>
+            <input type="text" id="phone" placeholder="017XXXXXXXX" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-xs text-white">
+        </div>
+        <div class="space-y-1">
+            <label class="text-xs text-gray-400">Password</label>
+            <input type="password" id="password" placeholder="********" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-xs text-white">
+        </div>
+        <button onclick="handleSubmit()" id="submitBtn" class="w-full bg-[#00f2fe] text-black font-bold py-3 rounded-xl text-xs shadow-lg">Login</button>
+        <p class="text-center text-xs text-gray-400 cursor-pointer" onclick="toggleMode()">
+            <span id="toggleText">Don't have an account? Sign Up</span>
+        </p>
+    </div>
+    <script>
+        let isLogin = true;
+        function toggleMode() {
+            isLogin = !isLogin;
+            document.getElementById('formTitle').innerText = isLogin ? 'Login to Account' : 'Create New Account';
+            document.getElementById('submitBtn').innerText = isLogin ? 'Login' : 'Sign Up';
+            document.getElementById('toggleText').innerText = isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login";
+        }
+        async function handleSubmit() {
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            if(!phone || !password) { alert('Please fill in all fields!'); return; }
+            const endpoint = isLogin ? '/api/login' : '/api/signup';
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+                const data = await response.json();
+                if(data.success) {
+                    alert(data.message);
+                    if(isLogin) {
+                        localStorage.setItem('userId', data.userId);
+                        window.location.href = 'index.html';
+                    } else { toggleMode(); }
+                } else { alert(data.message); }
+            } catch (err) { alert('Server connection error!'); }
+        }
+    </script>
+</body>
+</html>
