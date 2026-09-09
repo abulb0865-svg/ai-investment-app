@@ -3,52 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login / Sign Up</title>
+    <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { darkBg: '#0b1329', cardBg: '#111c38', accentBlue: '#00f2fe', neonGreen: '#00ff87' }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-[#0b1329] text-white font-sans flex items-center justify-center min-h-screen px-4">
-    <div class="bg-[#111c38] p-6 rounded-2xl border border-gray-800 w-full max-w-sm space-y-4 shadow-xl">
-        <h2 id="formTitle" class="text-xl font-bold text-center text-[#00f2fe]">Login to Account</h2>
-        <div class="space-y-1">
-            <label class="text-xs text-gray-400">Phone Number</label>
-            <input type="text" id="phone" placeholder="017XXXXXXXX" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-xs text-white">
+<body class="bg-darkBg text-white font-sans p-4 space-y-6">
+    <h1 class="text-xl font-bold text-accentBlue mb-4"><i class="fa-solid fa-user-shield"></i> Admin Control Panel</h1>
+    <div class="bg-cardBg rounded-2xl p-4 border border-gray-800 space-y-3">
+        <h2 class="text-sm font-bold text-white border-b border-gray-800 pb-2">Pending Deposits (Binance Pay)</h2>
+        <div class="flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-800 text-xs">
+            <div>
+                <p class="font-bold text-white">User ID: sample_user_id</p>
+                <p class="text-neonGreen font-semibold">Amount: 1280 BDT (10 USD)</p>
+            </div>
+            <button onclick="approveDeposit('SAMPLE_USER_ID', 1280)" class="bg-neonGreen/20 text-neonGreen px-3 py-1.5 rounded-lg font-bold">Approve</button>
         </div>
-        <div class="space-y-1">
-            <label class="text-xs text-gray-400">Password</label>
-            <input type="password" id="password" placeholder="********" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-xs text-white">
-        </div>
-        <button onclick="handleSubmit()" id="submitBtn" class="w-full bg-[#00f2fe] text-black font-bold py-3 rounded-xl text-xs shadow-lg">Login</button>
-        <p class="text-center text-xs text-gray-400 cursor-pointer" onclick="toggleMode()">
-            <span id="toggleText">Don't have an account? Sign Up</span>
-        </p>
     </div>
     <script>
-        let isLogin = true;
-        function toggleMode() {
-            isLogin = !isLogin;
-            document.getElementById('formTitle').innerText = isLogin ? 'Login to Account' : 'Create New Account';
-            document.getElementById('submitBtn').innerText = isLogin ? 'Login' : 'Sign Up';
-            document.getElementById('toggleText').innerText = isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login";
-        }
-        async function handleSubmit() {
-            const phone = document.getElementById('phone').value;
-            const password = document.getElementById('password').value;
-            if(!phone || !password) { alert('Please fill in all fields!'); return; }
-            const endpoint = isLogin ? '/api/login' : '/api/signup';
+        async function approveDeposit(userId, depositAmount) {
             try {
-                const response = await fetch(endpoint, {
+                const response = await fetch('/api/admin/approve-deposit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone, password })
+                    body: JSON.stringify({ userId, depositAmount })
                 });
                 const data = await response.json();
-                if(data.success) {
-                    alert(data.message);
-                    if(isLogin) {
-                        localStorage.setItem('userId', data.userId);
-                        window.location.href = 'index.html';
-                    } else { toggleMode(); }
-                } else { alert(data.message); }
+                alert(data.message);
             } catch (err) { alert('Server connection error!'); }
         }
     </script>
