@@ -3,80 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Login / Sign Up</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { darkBg: '#0b1329', cardBg: '#111c38', accentBlue: '#00f2fe', neonGreen: '#00ff87' }
-                }
-            }
-        }
-    </script>
 </head>
-<body class="bg-darkBg text-white font-sans p-4 space-y-6">
-    <h1 class="text-xl font-bold text-accentBlue mb-4"><i class="fa-solid fa-user-shield"></i> Admin Control Panel</h1>
-    
-    <div class="bg-cardBg rounded-2xl p-4 border border-gray-800 space-y-3">
-        <h2 class="text-sm font-bold text-white border-b border-gray-800 pb-2">Pending Deposits (Binance Pay)</h2>
-        
-        <!-- ডায়নামিক ডিপোজিট লিস্ট এখানে লোড হবে -->
-        <div id="depositsContainer" class="space-y-3">
-            <p class="text-xs text-gray-400">Loading pending deposits...</p>
+<body class="bg-[#0b1329] text-white font-sans flex items-center justify-center min-h-screen px-4">
+    <div class="bg-[#111c38] p-6 rounded-2xl border border-gray-800 w-full max-w-sm space-y-4 shadow-xl">
+        <h2 id="formTitle" class="text-xl font-bold text-center text-[#00f2fe]">Login to Account</h2>
+        <div class="space-y-1">
+            <label class="text-xs text-gray-400">Phone Number</label>
+            <input type="text" id="phone" placeholder="017XXXXXXXX" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-xs text-white">
         </div>
+        <div class="space-y-1">
+            <label class="text-xs text-gray-400">Password</label>
+            <input type="password" id="password" placeholder="********" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-xs text-white">
+        </div>
+        <button onclick="handleSubmit()" id="submitBtn" class="w-full bg-[#00f2fe] text-black font-bold py-3 rounded-xl text-xs shadow-lg">Login</button>
+        <p class="text-center text-xs text-gray-400 cursor-pointer" onclick="toggleMode()">
+            <span id="toggleText">Don't have an account? Sign Up</span>
+        </p>
     </div>
-
     <script>
-        // পেজ লোড হওয়ার সাথে সাথে পেন্ডিং ডিপোজিট ফেচ করা
-        async function fetchPendingDeposits() {
-            try {
-                const response = await fetch('/api/admin/deposits');
-                const deposits = await response.json();
-                
-                const container = document.getElementById('depositsContainer');
-                container.innerHTML = '';
-
-                if (deposits.length === 0) {
-                    container.innerHTML = '<p class="text-xs text-gray-400">No pending deposits found.</p>';
-                    return;
-                }
-
-                deposits.forEach(dep => {
-                    const item = document.createElement('div');
-                    item.className = 'flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-800 text-xs';
-                    item.innerHTML = `
-                        <div>
-                            <p class="font-bold text-white">User ID: ${dep.userId}</p>
-                            <p class="text-neonGreen font-semibold">Amount: ${dep.amount} BDT (Binance Pay ID: ${dep.binancePayId})</p>
-                        </div>
-                        <button onclick="approveDeposit('${dep._id}')" class="bg-neonGreen/20 text-neonGreen px-3 py-1.5 rounded-lg font-bold">Approve</button>
-                    `;
-                    container.appendChild(item);
-                });
-            } catch (err) {
-                console.error('Error fetching deposits:', err);
-            }
+        let isLogin = true;
+        function toggleMode() {
+            isLogin = !isLogin;
+            document.getElementById('formTitle').innerText = isLogin ? 'Login to Account' : 'Create New Account';
+            document.getElementById('submitBtn').innerText = isLogin ? 'Login' : 'Sign Up';
+            document.getElementById('toggleText').innerText = isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login";
         }
-
-        async function approveDeposit(depositId) {
+        async function handleSubmit() {
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            if(!phone || !password) { alert('Please fill in all fields!'); return; }
+            const endpoint = isLogin ? '/api/login' : '/api/signup';
             try {
-                const response = await fetch('/api/admin/approve-deposit', {
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ depositId })
+                    body: JSON.stringify({ phone, password })
                 });
                 const data = await response.json();
-                alert(data.message || 'Approved successfully!');
-                fetchPendingDeposits(); // লিস্ট রিফ্রেশ করা
-            } catch (err) { 
-                alert('Server connection error!'); 
-            }
+                if(data.success) {
+                    alert(data.message);
+                    if(isLogin) {
+                        localStorage.setItem('userId', data.userId);
+                        window.location.href = 'index.html';
+                    } else { toggleMode(); }
+                } else { alert(data.message); }
+            } catch (err) { alert('Server connection error!'); }
         }
-
-        // পেজ লোড হলে কল হবে
-        fetchPendingDeposits();
     </script>
 </body>
 </html>
