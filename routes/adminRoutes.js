@@ -1,19 +1,3 @@
-const express = require('express');
-const router = express.Router();
-const User = require('../models/User');
-const Deposit = require('../models/Deposit');
-
-// ১. পেন্ডিং ডিপোজিট লিস্ট ফেচ করার রাউট
-router.get('/deposits', async (req, res) => {
-    try {
-        const deposits = await Deposit.find({ status: 'pending' });
-        res.status(200).json(deposits);
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ২. ডিপোজিট অ্যাপ্রুভ এবং ইউজারের ব্যালেন্স যোগ করার রাউট
 router.post('/approve-deposit', async (req, res) => {
     try {
         const { depositId } = req.body;
@@ -30,17 +14,20 @@ router.post('/approve-deposit', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Deposit already approved' });
         }
 
-        // ইউজারকে খুঁজে বের করা (এখানে userId অবজেক্ট আইডি বা স্ট్రిং যাই হোক না কেন যাতে খুঁজে পায়)
-        const user = await User.findById(deposit.userId);
+        // ইউজারকে খুঁজে বের করা (সঠিকভাবে ব্যালেন্স আপডেট করার জন্য)
+        const user = await User.findOne({ 
+            $or: [
+                { _id: deposit.userId }, 
+                { _id: mongoose.Types.ObjectId.isValid(deposit.userId) ? deposit.userId : null }
+            ] 
+        });
+
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found for this deposit' });
         }
 
-        // ব্যালেন্স সংখ্যা (Number) হিসেবে যোগ করা নিশ্চিত করা
-        const currentBalance = Number(user.balance) || 0;
-        const depositAmount = Number(deposit.amount) || 0;
-
-        user.balance = currentBalance + depositAmount;
+        // ব্যালেন্স যোগ করা
+        user.balance = Number(user.balance || 0) + Number(deposit.amount || 0);
         await user.save();
 
         // ডিপোজিট স্ট্যাটাস 'approved' করা
@@ -53,5 +40,3 @@ router.post('/approve-deposit', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
-
-module.exports = router;
