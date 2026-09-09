@@ -3,165 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Deposit & Withdraw</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #0f172a;
-            color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .admin-container {
-            display: flex;
-            gap: 20px;
-            width: 100%;
-            max-width: 800px;
-            padding: 20px;
-        }
-        .admin-card {
-            background: #1e293b;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            flex: 1;
-        }
-        h3 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #38bdf8;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #475569;
-            background: #0f172a;
-            color: #fff;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-        .deposit-btn {
-            background: #22c55e;
-        }
-        .deposit-btn:hover {
-            background: #16a34a;
-        }
-        .withdraw-btn {
-            background: #ef4444;
-        }
-        .withdraw-btn:hover {
-            background: #dc2626;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            color: white;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        .message {
-            margin-top: 15px;
-            text-align: center;
-            font-size: 13px;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="admin-container">
-        <!-- ডিপোজিট সেকশন -->
-        <div class="admin-card">
-            <h3>Approve Deposit</h3>
-            <div class="form-group">
-                <label>User ID:</label>
-                <input type="text" id="depUserId" placeholder="User MongoDB ID">
-            </div>
-            <div class="form-group">
-                <label>Amount:</label>
-                <input type="number" id="depAmount" placeholder="Deposit Amount">
-            </div>
-            <button class="deposit-btn" onclick="handleAction('deposit')">Add Balance</button>
-            <div id="depMessage" class="message"></div>
-        </div>
-
-        <!-- উইথড্র সেকশন -->
-        <div class="admin-card">
-            <h3>Approve Withdraw</h3>
-            <div class="form-group">
-                <label>User ID:</label>
-                <input type="text" id="withUserId" placeholder="User MongoDB ID">
-            </div>
-            <div class="form-group">
-                <label>Amount:</label>
-                <input type="number" id="withAmount" placeholder="Withdraw Amount">
-            </div>
-            <button class="withdraw-btn" onclick="handleAction('withdraw')">Deduct Balance</button>
-            <div id="withMessage" class="message"></div>
-        </div>
-    </div>
-
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        async function handleAction(type) {
-            let userId, amount, endpoint, messageId;
-
-            if (type === 'deposit') {
-                userId = document.getElementById('depUserId').value.trim();
-                amount = parseFloat(document.getElementById('depAmount').value);
-                endpoint = '/api/admin/approve-deposit';
-                messageId = document.getElementById('depMessage');
-            } else {
-                userId = document.getElementById('withUserId').value.trim();
-                amount = parseFloat(document.getElementById('withAmount').value);
-                endpoint = '/api/admin/approve-withdraw';
-                messageId = document.getElementById('withMessage');
-            }
-
-            if (!userId || isNaN(amount)) {
-                messageId.style.color = '#ef4444';
-                messageId.innerText = 'দয়া করে সঠিক User ID এবং Amount দিন!';
-                return;
-            }
-
-            messageId.style.color = '#38bdf8';
-            messageId.innerText = 'প্রক্রিয়াধীন আছে...';
-
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(type === 'deposit' ? { userId, depositAmount: amount } : { userId, withdrawAmount: amount })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    messageId.style.color = '#22c55e';
-                    messageId.innerText = data.message;
-                } else {
-                    messageId.style.color = '#ef4444';
-                    messageId.innerText = 'ত্রুটি: ' + data.message;
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { darkBg: '#0b1329', cardBg: '#111c38', accentBlue: '#00f2fe', neonGreen: '#00ff87' }
                 }
-            } catch (error) {
-                messageId.style.color = '#ef4444';
-                messageId.innerText = 'সার্ভারে কানেক্ট করা যায়নি!';
             }
         }
     </script>
-
+</head>
+<body class="bg-darkBg text-white font-sans p-4 space-y-6">
+    <h1 class="text-xl font-bold text-accentBlue mb-4"><i class="fa-solid fa-user-shield"></i> Admin Control Panel</h1>
+    <div class="bg-cardBg rounded-2xl p-4 border border-gray-800 space-y-3">
+        <h2 class="text-sm font-bold text-white border-b border-gray-800 pb-2">Pending Deposits (Binance Pay)</h2>
+        <div class="flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-800 text-xs">
+            <div>
+                <p class="font-bold text-white">User ID: sample_user_id</p>
+                <p class="text-neonGreen font-semibold">Amount: 1280 BDT (10 USD)</p>
+            </div>
+            <button onclick="approveDeposit('SAMPLE_USER_ID', 1280)" class="bg-neonGreen/20 text-neonGreen px-3 py-1.5 rounded-lg font-bold">Approve</button>
+        </div>
+    </div>
+    <script>
+        async function approveDeposit(userId, depositAmount) {
+            try {
+                const response = await fetch('/api/admin/approve-deposit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, depositAmount })
+                });
+                const data = await response.json();
+                alert(data.message);
+            } catch (err) { alert('Server connection error!'); }
+        }
+    </script>
 </body>
 </html>
