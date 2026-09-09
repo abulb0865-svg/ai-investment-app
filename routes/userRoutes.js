@@ -4,17 +4,34 @@ const User = require('../models/User');
 const Deposit = require('../models/Deposit'); // ডিপোজিট মডেল ইমপোর্ট করা হলো
 const Withdraw = require('../models/Withdraw'); // উইথড্র মডেল ইমপোর্ট করা হলো
 
-// ১. ডিপোজিট রিকোয়েস্ট সাবমিট করার রাউট (নতুন যুক্ত করা হয়েছে)
+// হেল্পার ফাংশন: ইউজার খুঁজে না পেলে অটো তৈরি করার জন্য বা বিভিন্ন ফরম্যাটের আইডি হ্যান্ডেল করতে
+async function findOrCreateUser(identifier) {
+    if (!identifier) return null;
+    let user = await User.findOne({ 
+        $or: [
+            { _id: identifier.match(/^[0-9a-fA-F]{24}$/) ? identifier : null }, 
+            { telegramId: identifier }, 
+            { userId: identifier }
+        ] 
+    });
+    return user;
+}
+
+// ১. ডিপোজিট রিকোয়েস্ট সাবমিট করার রাউট
 router.post('/deposit', async (req, res) => {
     try {
         const { userId, amount, usdAmount, trxId } = req.body;
         
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        let user = await findOrCreateUser(userId);
+        if (!user) {
+            // যদি ইউজার ডাটাবেজে না থাকে, তবে অটো রেজিস্টার করে নেওয়া
+            user = new User({ telegramId: userId, userId: userId, balance: 0 });
+            await user.save();
+        }
 
         // ডাটাবেজে পেন্ডিং ডিপোজিট হিসেবে সেভ করা
         const newDeposit = new Deposit({
-            userId,
+            userId: user._id,
             amount: amount || 0,
             usdAmount: usdAmount || 0,
             trxId: trxId || 'N/A',
@@ -34,8 +51,11 @@ router.post('/deposit', async (req, res) => {
 router.post('/withdraw', async (req, res) => {
     try {
         const { userId, amount, binancePayId } = req.body;
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        let user = await findOrCreateUser(userId);
+        if (!user) {
+            user = new User({ telegramId: userId, userId: userId, balance: 0 });
+            await user.save();
+        }
 
         if (amount < 350) return res.status(400).json({ success: false, message: 'Minimum withdrawal is 350 BDT' });
         if (user.balance < amount) return res.status(400).json({ success: false, message: 'Insufficient balance' });
@@ -47,7 +67,7 @@ router.post('/withdraw', async (req, res) => {
 
         // অ্যাডমিন প্যানেলে দেখানোর জন্য Withdraw মডেলে সেভ করা
         const newWithdraw = new Withdraw({
-            userId,
+            userId: user._id,
             amount,
             binancePayId,
             status: 'pending'
@@ -65,8 +85,11 @@ router.post('/withdraw', async (req, res) => {
 router.post('/daily-check-in', async (req, res) => {
     try {
         const { userId } = req.body;
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        let user = await findOrCreateUser(userId);
+        if (!user) {
+            user = new User({ telegramId: userId, userId: userId, balance: 0 });
+            await user.save();
+        }
 
         const today = new Date().toDateString();
         if (user.lastCheckInDate === today) {
