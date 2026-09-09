@@ -7,7 +7,8 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
 
-require('./bot');
+// টেলিগ্রাম বটের পোলিং কনফ্লিক্ট বা সার্ভার ক্র্যাশ এড়াতে এই লাইনটি কমেন্ট বা বাদ দেওয়া হলো
+// require('./bot');
 
 const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/ai-investment-app';
 
