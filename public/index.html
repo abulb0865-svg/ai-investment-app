@@ -20,6 +20,10 @@
 
     <div class="p-4 bg-cardBg border-b border-gray-800 flex justify-between items-center">
         <h1 class="text-sm font-bold text-accentBlue"><i class="fa-solid fa-robot"></i> AI Investment</h1>
+        <!-- ব্যালেন্স দেখানোর জন্য নতুন অংশ -->
+        <div class="text-xs text-neonGreen font-semibold">
+            Balance: <span id="userBalance">0</span> BDT
+        </div>
     </div>
 
     <div id="contentArea" class="p-4">
@@ -113,6 +117,26 @@
     </div>
 
     <script>
+        // পেজ লোড হওয়ার সাথে সাথে ব্যালেন্স ফেচ করার ফাংশন
+        async function loadBalance() {
+            const userId = localStorage.getItem('userId');
+            if (!userId) return;
+            
+            try {
+                const response = await fetch(`/api/user-balance?userId=${userId}`);
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('userBalance').innerText = data.balance;
+                }
+            } catch (err) {
+                console.error('Failed to load balance');
+            }
+        }
+
+        window.onload = function() {
+            loadBalance();
+        };
+
         function switchTab(tab) {
             document.getElementById('homeView').classList.add('hidden');
             document.getElementById('activityView').classList.add('hidden');
@@ -152,6 +176,7 @@
                 });
                 const data = await response.json();
                 alert(data.message);
+                loadBalance(); // চেক-ইন করার পর ব্যালেন্স আপডেট করার জন্য
             } catch (err) { alert('Server error!'); }
         }
 
@@ -175,6 +200,7 @@
                     document.getElementById('withdrawAmount').value = '';
                     document.getElementById('binancePayId').value = '';
                     switchTab('home');
+                    loadBalance(); // উইথড্র করার পর ব্যালেন্স আপডেট করার জন্য
                 }
             } catch (err) { alert('Server error!'); }
         }
