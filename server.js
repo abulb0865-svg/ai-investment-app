@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const Deposit = require('./models/Deposit'); // ডিপোজিট মডেল রিকুইয়ার করা হলো
 
 const app = express();
 app.use(express.json());
@@ -17,10 +18,16 @@ mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-.then(() => {
+.then(async () => {
     console.log('MongoDB Connected Successfully');
-    // ডাটা ক্লিয়ার করার লাইনটি এখান থেকে স্থায়ীভাবে সরিয়ে দেওয়া হয়েছে, 
-    // যাতে এখন থেকে নতুন কোনো ডিপোজিট আসলে তা নিরাপদে সেভ থাকে।
+    
+    // এককালীন পুরোনো সব ভুল ডিপোজিট ডাটা ডিলিট করার জন্য
+    try {
+        const result = await Deposit.deleteMany({});
+        console.log(`Successfully deleted ${result.deletedCount} old deposits.`);
+    } catch (err) {
+        console.log('Error deleting old deposits:', err);
+    }
 })
 .catch(err => console.log('MongoDB Connection Error: ', err));
 
