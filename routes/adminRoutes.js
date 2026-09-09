@@ -18,6 +18,10 @@ router.post('/approve-deposit', async (req, res) => {
     try {
         const { depositId } = req.body;
 
+        if (!depositId) {
+            return res.status(400).json({ success: false, message: 'Deposit ID is required' });
+        }
+
         // ডিপোজিট রিকোয়েস্ট খুঁজে বের করা
         const deposit = await Deposit.findById(depositId);
         if (!deposit) return res.status(404).json({ success: false, message: 'Deposit request not found' });
@@ -26,11 +30,17 @@ router.post('/approve-deposit', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Deposit already approved' });
         }
 
-        // ইউজারকে খুঁজে বের করা এবং ব্যালেন্স যোগ করা
+        // ইউজারকে খুঁজে বের করা (এখানে userId অবজেক্ট আইডি বা স্ট్రిং যাই হোক না কেন যাতে খুঁজে পায়)
         const user = await User.findById(deposit.userId);
-        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found for this deposit' });
+        }
 
-        user.balance += deposit.amount;
+        // ব্যালেন্স সংখ্যা (Number) হিসেবে যোগ করা নিশ্চিত করা
+        const currentBalance = Number(user.balance) || 0;
+        const depositAmount = Number(deposit.amount) || 0;
+
+        user.balance = currentBalance + depositAmount;
         await user.save();
 
         // ডিপোজিট স্ট্যাটাস 'approved' করা
@@ -39,6 +49,7 @@ router.post('/approve-deposit', async (req, res) => {
 
         res.status(200).json({ success: true, message: 'Deposit approved and balance updated successfully!' });
     } catch (error) {
+        console.error('Approve deposit error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
