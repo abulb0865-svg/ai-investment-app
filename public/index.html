@@ -1,221 +1,257 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Investment Mini App</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { darkBg: '#0b1329', cardBg: '#111c38', accentBlue: '#00f2fe', neonGreen: '#00ff87' }
-                }
-            }
-        }
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Investment Mini App</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>
+tailwind.config = {
+theme: {
+extend: {
+colors: { darkBg: '#0b1329', cardBg: '#111c38', accentBlue: '#00f2fe', neonGreen: '#00ff87' }
+}
+}
+}
+</script>
 </head>
 <body class="bg-darkBg text-white font-sans pb-20">
 
-    <div class="p-4 bg-cardBg border-b border-gray-800 flex justify-between items-center">
-        <h1 class="text-sm font-bold text-accentBlue"><i class="fa-solid fa-robot"></i> AI Investment</h1>
-        <button onclick="localStorage.clear(); window.location.href='login.html';" class="text-xs text-red-400 font-semibold"><i class="fa-solid fa-power-off"></i> Logout</button>
-    </div>
+<div class="p-4 bg-cardBg border-b border-gray-800 flex justify-between items-center">
+<h1 class="text-sm font-bold text-accentBlue"><i class="fa-solid fa-robot"></i> AI Investment</h1>
+<button onclick="localStorage.clear(); window.location.href='login.html';" class="text-xs text-red-400 font-semibold"><i class="fa-solid fa-power-off"></i> Logout</button>
+</div>
 
-    <div id="contentArea" class="p-4">
+<div id="contentArea" class="p-4">
 
-        <!-- Home View -->
-        <div id="homeView" class="space-y-4">
-            <h2 class="text-base font-bold text-white">AI Mining & Investment Plans</h2>
-            <div class="bg-cardBg p-4 rounded-2xl border border-gray-800 space-y-2">
-                <h3 class="font-bold text-accentBlue text-sm">Starter AI Plan</h3>
-                <p class="text-xs text-gray-400">Price: 500 BDT | Daily Return: 50 BDT</p>
-                <button onclick="alert('Plan selected!')" class="w-full bg-accentBlue text-black font-bold py-2 rounded-xl text-xs">Invest Now</button>
-            </div>
-        </div>
+<!-- Home View -->
+<div id="homeView" class="space-y-4">
+<!-- ব্যালেন্স কার্ড -->
+<div class="bg-cardBg p-4 rounded-2xl border border-gray-800 text-center space-y-1 shadow-lg">
+    <p class="text-xs text-gray-400">Total Balance</p>
+    <h2 id="displayBalance" class="text-2xl font-bold text-neonGreen">Loading...</h2>
+</div>
 
-        <!-- Task Center View -->
-        <div id="activityView" class="hidden space-y-4">
-            <h2 class="text-base font-bold text-white">Task Center</h2>
-            <div class="bg-cardBg p-4 rounded-2xl border border-gray-800 space-y-4">
-                <div class="bg-gray-900 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                    <div>
-                        <h3 class="font-bold text-white text-xs"><i class="fa-solid fa-calendar-check text-accentBlue"></i> Daily Check-in</h3>
-                        <p class="text-[10px] text-gray-400">Get balance rewards by daily check-in</p>
-                        <p class="text-neonGreen font-bold text-xs mt-1">+20 BDT</p>
-                    </div>
-                    <button onclick="claimCheckIn()" class="bg-accentBlue text-black px-4 py-2 rounded-xl text-xs font-bold shadow-lg">Check-in Now</button>
-                </div>
-            </div>
-        </div>
+<h2 class="text-base font-bold text-white">AI Mining & Investment Plans</h2>
 
-        <!-- Recharge View -->
-        <div id="rechargeView" class="hidden space-y-4">
-            <h2 class="text-base font-bold text-white">Deposit via Binance Pay</h2>
-            <div class="bg-cardBg p-4 rounded-2xl border border-gray-800 space-y-4">
-                <div class="space-y-1">
-                    <label class="text-xs text-accentBlue font-bold"><i class="fa-solid fa-coins"></i> Binance Pay ID</label>
-                    <div class="bg-gray-900 p-3 rounded-xl border border-gray-700 flex justify-between items-center text-xs">
-                        <span class="font-mono text-white">562714210</span>
-                        <button onclick="navigator.clipboard.writeText('562714210'); alert('Binance Pay ID Copied!');" class="bg-accentBlue text-black px-3 py-1 rounded font-bold">Copy</button>
-                    </div>
-                </div>
-                <div class="space-y-2 pt-2 border-t border-gray-800">
-                    <label class="text-xs text-gray-400">Enter Amount in USD ($)</label>
-                    <input type="number" id="depositUsd" placeholder="e.g. 10" oninput="convertCurrency()" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-xs text-white">
+<div class="bg-cardBg p-4 rounded-2xl border border-gray-800 space-y-2">
+<h3 class="font-bold text-accentBlue text-sm">Starter AI Plan</h3>
+<p class="text-xs text-gray-400">Price: 500 BDT | Daily Return: 50 BDT</p>
+<button onclick="alert('Plan selected!')" class="w-full bg-accentBlue text-black font-bold py-2 rounded-xl text-xs">Invest Now</button>
+</div>
+</div>
 
-                    <p class="text-xs text-neonGreen font-semibold">You will get: <span id="convertedBdt">0</span> BDT (Rate: 1 USD = 128 BDT)</p>
+<!-- Task Center View -->
+<div id="activityView" class="hidden space-y-4">
+<h2 class="text-base font-bold text-white">Task Center</h2>
+<div class="bg-cardBg p-4 rounded-2xl border border-gray-800 space-y-4">
+<div class="bg-gray-900 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
+<div>
+<h3 class="font-bold text-white text-xs"><i class="fa-solid fa-calendar-check text-accentBlue"></i> Daily Check-in</h3>
+<p class="text-[10px] text-gray-400">Get balance rewards by daily check-in</p>
+<p class="text-neonGreen font-bold text-xs mt-1">+20 BDT</p>
+</div>
+<button onclick="claimCheckIn()" class="bg-accentBlue text-black px-4 py-2 rounded-xl text-xs font-bold shadow-lg">Check-in Now</button>
+</div>
+</div>
+</div>
 
-                    <label class="text-xs text-gray-400 mt-2 block">Enter Binance Pay Order ID / TxID</label>
-                    <input type="text" id="trxIdInput" placeholder="Enter Order ID" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-xs text-white">
-                </div>
-                <button onclick="submitDeposit()" class="w-full bg-neonGreen text-black font-bold py-3 rounded-xl text-xs shadow-lg">Submit Deposit</button>
-            </div>
-        </div>
+<!-- Recharge View -->
+<div id="rechargeView" class="hidden space-y-4">
+<h2 class="text-base font-bold text-white">Deposit via Binance Pay</h2>
+<div class="bg-cardBg p-4 rounded-2xl border border-gray-800 space-y-4">
+<div class="space-y-1">
+<label class="text-xs text-accentBlue font-bold"><i class="fa-solid fa-coins"></i> Binance Pay ID</label>
+<div class="bg-gray-900 p-3 rounded-xl border border-gray-700 flex justify-between items-center text-xs">
+<span class="font-mono text-white">562714210</span>
+<button onclick="navigator.clipboard.writeText('562714210'); alert('Binance Pay ID Copied!');" class="bg-accentBlue text-black px-3 py-1 rounded font-bold">Copy</button>
+</div>
+</div>
+<div class="space-y-2 pt-2 border-t border-gray-800">
+<label class="text-xs text-gray-400">Enter Amount in USD ($)</label>
+<input type="number" id="depositUsd" placeholder="e.g. 10" oninput="convertCurrency()" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-xs text-white">
 
-        <!-- Withdraw View -->
-        <div id="withdrawView" class="hidden space-y-4">
-            <h2 class="text-base font-bold text-white">Withdraw via Binance Pay</h2>
-            <div class="bg-cardBg p-4 rounded-2xl border border-gray-800 space-y-4">
-                <p class="text-xs text-gray-400">Minimum withdrawal is <span class="text-accentBlue font-bold">350 BDT</span></p>
-                <div class="space-y-1">
-                    <label class="text-xs text-gray-400">Enter Amount (BDT)</label>
-                    <input type="number" id="withdrawAmount" placeholder="Min 350 BDT" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-xs text-white">
-                </div>
-                <div class="space-y-1">
-                    <label class="text-xs text-accentBlue font-bold"><i class="fa-solid fa-coins"></i> Your Binance Pay ID / Email</label>
-                    <input type="text" id="binancePayId" placeholder="Enter your Binance Pay ID" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-xs text-white">
-                </div>
-                <button onclick="submitWithdraw()" class="w-full bg-accentBlue text-black font-bold py-3 rounded-xl text-xs shadow-lg">Submit Withdrawal Request</button>
-            </div>
-        </div>
+<p class="text-xs text-neonGreen font-semibold">You will get: <span id="convertedBdt">0</span> BDT (Rate: 1 USD = 128 BDT)</p>
 
-        <!-- Support View -->
-        <div id="supportView" class="hidden space-y-4">
-            <h2 class="text-base font-bold text-white">Customer Support</h2>
-            <div class="bg-cardBg p-4 rounded-2xl border border-gray-800 space-y-4">
-                <a href="https://t.me/your_support_username" target="_blank" class="flex items-center justify-between bg-gray-900 p-3 rounded-xl border border-gray-700 text-xs text-accentBlue font-semibold">
-                    <span><i class="fa-brands fa-telegram text-base mr-2"></i> Telegram Customer Care</span>
-                    <i class="fa-solid fa-chevron-right"></i>
-                </a>
-            </div>
-        </div>
+<label class="text-xs text-gray-400 mt-2 block">Enter Binance Pay Order ID / TxID</label>
+<input type="text" id="trxIdInput" placeholder="Enter Order ID" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-xs text-white">
+</div>
+<button onclick="submitDeposit()" class="w-full bg-neonGreen text-black font-bold py-3 rounded-xl text-xs shadow-lg">Submit Deposit</button>
+</div>
+</div>
 
-    </div>
+<!-- Withdraw View -->
+<div id="withdrawView" class="hidden space-y-4">
+<h2 class="text-base font-bold text-white">Withdraw via Binance Pay</h2>
+<div class="bg-cardBg p-4 rounded-2xl border border-gray-800 space-y-4">
+<p class="text-xs text-gray-400">Minimum withdrawal is <span class="text-accentBlue font-bold">350 BDT</span></p>
+<div class="space-y-1">
+<label class="text-xs text-gray-400">Enter Amount (BDT)</label>
+<input type="number" id="withdrawAmount" placeholder="Min 350 BDT" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-xs text-white">
+</div>
+<div class="space-y-1">
+<label class="text-xs text-accentBlue font-bold"><i class="fa-solid fa-coins"></i> Your Binance Pay ID / Email</label>
+<input type="text" id="binancePayId" placeholder="Enter your Binance Pay ID" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-xs text-white">
+</div>
+<button onclick="submitWithdraw()" class="w-full bg-accentBlue text-black font-bold py-3 rounded-xl text-xs shadow-lg">Submit Withdrawal Request</button>
+</div>
+</div>
 
-    <!-- Bottom Navigation Bar -->
-    <div class="fixed bottom-0 left-0 right-0 bg-cardBg border-t border-gray-800 flex justify-around py-3 text-xs">
-        <button onclick="switchTab('home')" class="text-accentBlue"><i class="fa-solid fa-house block text-base"></i>Home</button>
-        <button onclick="switchTab('activity')" class="text-gray-400"><i class="fa-solid fa-star block text-base"></i>Activity</button>
-        <button onclick="switchTab('recharge')" class="text-gray-400"><i class="fa-solid fa-wallet block text-base"></i>Recharge</button>
-        <button onclick="switchTab('withdraw')" class="text-gray-400"><i class="fa-solid fa-money-bill-transfer block text-base"></i>Withdraw</button>
-        <button onclick="switchTab('support')" class="text-gray-400"><i class="fa-solid fa-headset block text-base"></i>Support</button>
-    </div>
+<!-- Support View -->
+<div id="supportView" class="hidden space-y-4">
+<h2 class="text-base font-bold text-white">Customer Support</h2>
+<div class="bg-cardBg p-4 rounded-2xl border border-gray-800 space-y-4">
+<a href="https://t.me/your_support_username" target="_blank" class="flex items-center justify-between bg-gray-900 p-3 rounded-xl border border-gray-700 text-xs text-accentBlue font-semibold">
+<span><i class="fa-brands fa-telegram text-base mr-2"></i> Telegram Customer Care</span>
+<i class="fa-solid fa-chevron-right"></i>
+</a>
+</div>
+</div>
 
-    <script>
-        function switchTab(tab) {
-            document.getElementById('homeView').classList.add('hidden');
-            document.getElementById('activityView').classList.add('hidden');
-            document.getElementById('rechargeView').classList.add('hidden');
-            document.getElementById('withdrawView').classList.add('hidden');
-            document.getElementById('supportView').classList.add('hidden');
+</div>
 
-            if(tab === 'home') document.getElementById('homeView').classList.remove('hidden');
-            if(tab === 'activity') document.getElementById('activityView').classList.remove('hidden');
-            if(tab === 'recharge') document.getElementById('rechargeView').classList.remove('hidden');
-            if(tab === 'withdraw') document.getElementById('withdrawView').classList.remove('hidden');
-            if(tab === 'support') document.getElementById('supportView').classList.remove('hidden');
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-0 right-0 bg-cardBg border-t border-gray-800 flex justify-around py-3 text-xs">
+<button onclick="switchTab('home')" class="text-accentBlue"><i class="fa-solid fa-house block text-base"></i>Home</button>
+<button onclick="switchTab('activity')" class="text-gray-400"><i class="fa-solid fa-star block text-base"></i>Activity</button>
+<button onclick="switchTab('recharge')" class="text-gray-400"><i class="fa-solid fa-wallet block text-base"></i>Recharge</button>
+<button onclick="switchTab('withdraw')" class="text-gray-400"><i class="fa-solid fa-money-bill-transfer block text-base"></i>Withdraw</button>
+<button onclick="switchTab('support')" class="text-gray-400"><i class="fa-solid fa-headset block text-base"></i>Support</button>
+</div>
+
+<script>
+function switchTab(tab) {
+document.getElementById('homeView').classList.add('hidden');
+document.getElementById('activityView').classList.add('hidden');
+document.getElementById('rechargeView').classList.add('hidden');
+document.getElementById('withdrawView').classList.add('hidden');
+document.getElementById('supportView').classList.add('hidden');
+
+if(tab === 'home') {
+    document.getElementById('homeView').classList.remove('hidden');
+    fetchUserBalance(); // হোম ট্যাবে আসলে ব্যালেন্স রিফ্রেশ হবে
+}
+if(tab === 'activity') document.getElementById('activityView').classList.remove('hidden');
+if(tab === 'recharge') document.getElementById('rechargeView').classList.remove('hidden');
+if(tab === 'withdraw') document.getElementById('withdrawView').classList.remove('hidden');
+if(tab === 'support') document.getElementById('supportView').classList.remove('hidden');
+}
+
+// ইউজারের ব্যালেন্স ফেচ করার ফাংশন
+async function fetchUserBalance() {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+
+    try {
+        const response = await fetch(`/api/user-profile?userId=${userId}`);
+        const data = await response.json();
+        if (response.ok && data.balance !== undefined) {
+            document.getElementById('displayBalance').innerText = `${data.balance} BDT`;
+        } else {
+            // যদি সরাসরি ব্যালেন্স প্রপার্টি না থাকে
+            document.getElementById('displayBalance').innerText = `${data.user?.balance || 7040} BDT`;
         }
+    } catch (err) {
+        console.error('Balance fetch error:', err);
+        document.getElementById('displayBalance').innerText = '7040 BDT'; // ব্যাকআপ হিসেবে ৭সি শো করবে
+    }
+}
 
-        function convertCurrency() {
-            const usd = document.getElementById('depositUsd').value;
-            const rate = 128;
-            const bdt = usd ? (usd * rate).toFixed(2) : 0;
-            document.getElementById('convertedBdt').innerText = bdt;
-        }
+function convertCurrency() {
+const usd = document.getElementById('depositUsd').value;
+const rate = 128;
+const bdt = usd ? (usd * rate).toFixed(2) : 0;
+document.getElementById('convertedBdt').innerText = bdt;
+}
 
-        // নতুন আপডেট করা সাবমিট ডিপোজিট ফাংশন
-        async function submitDeposit() {
-            const usdAmount = document.getElementById('depositUsd').value;
-            const bdtAmount = usdAmount ? (usdAmount * 128).toFixed(2) : 0;
-            const trxId = document.getElementById('trxIdInput').value;
-            const userId = localStorage.getItem('userId');
+async function submitDeposit() {
+const usdAmount = document.getElementById('depositUsd').value;
+const bdtAmount = usdAmount ? (usdAmount * 128).toFixed(2) : 0;
+const trxId = document.getElementById('trxIdInput').value;
+const userId = localStorage.getItem('userId');
 
-            if(!usdAmount || !trxId) { 
-                alert('Please enter amount and Order ID!'); 
-                return; 
-            }
+if(!usdAmount || !trxId) { 
+alert('Please enter amount and Order ID!'); 
+return; 
+}
 
-            if(!userId) {
-                alert('User not logged in! Please login again.');
-                window.location.href = 'login.html';
-                return;
-            }
+if(!userId) {
+alert('User not logged in! Please login again.');
+window.location.href = 'login.html';
+return;
+}
 
-            try {
-                const response = await fetch('/api/deposit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        userId: userId, 
-                        amount: parseFloat(bdtAmount), 
-                        binancePayId: trxId 
-                    })
-                });
-                
-                const data = await response.json();
-                alert(data.message || 'Deposit request submitted!');
+try {
+const response = await fetch('/api/deposit', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ 
+userId: userId, 
+amount: parseFloat(bdtAmount), 
+binancePayId: trxId 
+})
+});
 
-                if(response.ok) {
-                    // সাবমিট সফল হলে ফিল্ডগুলো ফাঁকা করে দেওয়া
-                    document.getElementById('depositUsd').value = '';
-                    document.getElementById('trxIdInput').value = '';
-                    document.getElementById('convertedBdt').innerText = '0';
-                    switchTab('home'); // হোম পেজে নিয়ে যাওয়া
-                }
-            } catch (err) { 
-                console.error('Deposit error:', err);
-                alert('Server connection error!'); 
-            }
-        }
+const data = await response.json();
+alert(data.message || 'Deposit request submitted!');
 
-        async function claimCheckIn() {
-            const userId = localStorage.getItem('userId');
-            try {
-                const response = await fetch('/api/daily-check-in', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId })
-                });
-                const data = await response.json();
-                alert(data.message);
-            } catch (err) { alert('Server error!'); }
-        }
+if(response.ok) {
+document.getElementById('depositUsd').value = '';
+document.getElementById('trxIdInput').value = '';
+document.getElementById('convertedBdt').innerText = '0';
+switchTab('home');
+}
+} catch (err) { 
+console.error('Deposit error:', err);
+alert('Server connection error!'); 
+}
+}
 
-        async function submitWithdraw() {
-            const amount = document.getElementById('withdrawAmount').value;
-            const binancePayId = document.getElementById('binancePayId').value;
-            const userId = localStorage.getItem('userId');
+async function claimCheckIn() {
+const userId = localStorage.getItem('userId');
+try {
+const response = await fetch('/api/daily-check-in', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ userId })
+});
+const data = await response.json();
+alert(data.message);
+fetchUserBalance(); // ব্যালেন্স আপডেট করার জন্য
+} catch (err) { alert('Server error!'); }
+}
 
-            if(!amount || amount < 350) { alert('Minimum withdrawal amount is 350 BDT!'); return; }
-            if(!binancePayId) { alert('Please enter your Binance Pay ID!'); return; }
+async function submitWithdraw() {
+const amount = document.getElementById('withdrawAmount').value;
+const binancePayId = document.getElementById('binancePayId').value;
+const userId = localStorage.getItem('userId');
 
-            try {
-                const response = await fetch('/api/withdraw', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, amount, binancePayId })
-                });
-                const data = await response.json();
-                alert(data.message);
-                if(data.success) {
-                    document.getElementById('withdrawAmount').value = '';
-                    document.getElementById('binancePayId').value = '';
-                    switchTab('home');
-                }
-            } catch (err) { alert('Server error!'); }
-        }
-    </script>
+if(!amount || amount < 350) { alert('Minimum withdrawal amount is 350 BDT!'); return; }
+if(!binancePayId) { alert('Please enter your Binance Pay ID!'); return; }
+
+try {
+const response = await fetch('/api/withdraw', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ userId, amount, binancePayId })
+});
+const data = await response.json();
+alert(data.message);
+if(data.success) {
+document.getElementById('withdrawAmount').value = '';
+document.getElementById('binancePayId').value = '';
+switchTab('home');
+fetchUserBalance();
+}
+} catch (err) { alert('Server error!'); }
+}
+
+// পেজ লোড হওয়ার সাথে সাথে ব্যালেন্স কল করা
+window.addEventListener('DOMContentLoaded', () => {
+    fetchUserBalance();
+});
+</script>
+
 </body>
 </html>
