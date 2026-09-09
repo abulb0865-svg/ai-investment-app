@@ -1,3 +1,20 @@
+const express = require('express');
+const router = express.Router();
+const mongoose = require('mongoose');
+const User = require('../models/User');
+const Deposit = require('../models/Deposit');
+
+// ১. পেন্ডিং ডিপোজিট লিস্ট ফেচ করার রাউট
+router.get('/deposits', async (req, res) => {
+    try {
+        const deposits = await Deposit.find({ status: 'pending' });
+        res.status(200).json(deposits);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ২. ডিপোজিট অ্যাপ্রুভ এবং ইউজারের ব্যালেন্স যোগ করার রাউট
 router.post('/approve-deposit', async (req, res) => {
     try {
         const { depositId } = req.body;
@@ -40,3 +57,5 @@ router.post('/approve-deposit', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
+module.exports = router;
