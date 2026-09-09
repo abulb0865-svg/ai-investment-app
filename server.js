@@ -9,7 +9,9 @@ app.use(express.static('public'));
 
 require('./bot');
 
-mongoose.connect('mongodb://localhost:27017/ai-investment-app', {
+const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/ai-investment-app';
+
+mongoose.connect(mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => console.log('MongoDB Connected')).catch(err => console.log(err));
