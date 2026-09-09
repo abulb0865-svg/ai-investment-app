@@ -3,43 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { darkBg: '#0b1329', cardBg: '#111c38', accentBlue: '#00f2fe', neonGreen: '#00ff87' }
-                }
-            }
+    <title>Admin Panel - Approve Deposit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0f172a;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
-    </script>
+        .admin-card {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #38bdf8;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: #fff;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #22c55e;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #16a34a;
+        }
+        #message {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
 </head>
-<body class="bg-darkBg text-white font-sans p-4 space-y-6">
-    <h1 class="text-xl font-bold text-accentBlue mb-4"><i class="fa-solid fa-user-shield"></i> Admin Control Panel</h1>
-    <div class="bg-cardBg rounded-2xl p-4 border border-gray-800 space-y-3">
-        <h2 class="text-sm font-bold text-white border-b border-gray-800 pb-2">Pending Deposits (Binance Pay)</h2>
-        <div class="flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-800 text-xs">
-            <div>
-                <p class="font-bold text-white">User ID: sample_user_id</p>
-                <p class="text-neonGreen font-semibold">Amount: 1280 BDT (10 USD)</p>
-            </div>
-            <button onclick="approveDeposit('SAMPLE_USER_ID', 1280)" class="bg-neonGreen/20 text-neonGreen px-3 py-1.5 rounded-lg font-bold">Approve</button>
+<body>
+
+    <div class="admin-card">
+        <h2>Admin Approval Panel</h2>
+        <div class="form-group">
+            <label for="userId">User ID:</label>
+            <input type="text" id="userId" placeholder="ইউজারের MongoDB ID দিন">
         </div>
+        <div class="form-group">
+            <label for="depositAmount">Deposit Amount (BDT/USD):</label>
+            <input type="number" id="depositAmount" placeholder="টাকার পরিমাণ দিন (যেমন: 7040)">
+        </div>
+        <button onclick="approveDeposit()">Approve Deposit</button>
+        <div id="message"></div>
     </div>
+
     <script>
-        async function approveDeposit(userId, depositAmount) {
+        async function approveDeposit() {
+            const userId = document.getElementById('userId').value.trim();
+            const depositAmount = parseFloat(document.getElementById('depositAmount').value);
+            const messageDiv = document.getElementById('message');
+
+            if (!userId || isNaN(depositAmount)) {
+                messageDiv.style.color = '#ef4444';
+                messageDiv.innerText = 'দয়া করে সঠিক User ID এবং Amount দিন!';
+                return;
+            }
+
+            messageDiv.style.color = '#38bdf8';
+            messageDiv.innerText = 'প্রক্রিয়াধীন আছে...';
+
             try {
                 const response = await fetch('/api/admin/approve-deposit', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({ userId, depositAmount })
                 });
+
                 const data = await response.json();
-                alert(data.message);
-            } catch (err) { alert('Server connection error!'); }
+
+                if (data.success) {
+                    messageDiv.style.color = '#22c55e';
+                    messageDiv.innerText = data.message;
+                } else {
+                    messageDiv.style.color = '#ef4444';
+                    messageDiv.innerText = 'ত্রুটি: ' + data.message;
+                }
+            } catch (error) {
+                messageDiv.style.color = '#ef4444';
+                messageDiv.innerText = 'সার্ভারে কানেক্ট করা যায়নি!';
+            }
         }
     </script>
+
 </body>
 </html>
