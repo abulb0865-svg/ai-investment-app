@@ -23,6 +23,7 @@ mongoose.connect(MONGO_URI, {
 // রাউটসমূহ
 app.use('/api', require('./routes/authRoutes'));
 app.use('/api', require('./routes/userRoutes'));
+app.use('/api', require('./routes/depositRoutes')); // **এই লাইনটি যোগ করা হয়েছে**
 app.use('/api/admin', require('./routes/adminRoutes'));
 
 const PORT = process.env.PORT || 5000;
