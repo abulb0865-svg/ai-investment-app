@@ -12,7 +12,7 @@
                 });
                 const data = await response.json();
                 
-                // সবসময় ডাটা থেকে মেসেজ বা ডিফল্ট টেক্সট দেখাবে, undefined আসবে না
+                // এখানে data.message ব্যবহার করা হয়েছে (ডট সহ)
                 alert(data.message || (data.success ? 'Success!' : 'Something went wrong!'));
 
                 if(data.success) {
@@ -20,7 +20,7 @@
                         localStorage.setItem('userId', data.userId);
                         window.location.href = 'index.html';
                     } else { 
-                        toggleMode(); // সাইন আপ সফল হলে লগইন মোডে নিয়ে যাবে
+                        toggleMode(); 
                     }
                 }
             } catch (err) { 
