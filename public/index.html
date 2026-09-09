@@ -135,12 +135,49 @@
             document.getElementById('convertedBdt').innerText = bdt;
         }
 
+        // নতুন আপডেট করা সাবমিট ডিপোজিট ফাংশন
         async function submitDeposit() {
             const usdAmount = document.getElementById('depositUsd').value;
             const bdtAmount = usdAmount ? (usdAmount * 128).toFixed(2) : 0;
             const trxId = document.getElementById('trxIdInput').value;
-            if(!usdAmount || !trxId) { alert('Please enter amount and Order ID!'); return; }
-            alert('Deposit request submitted for ' + bdtAmount + ' BDT (' + usdAmount + ' USD)! Waiting for admin approval.');
+            const userId = localStorage.getItem('userId');
+
+            if(!usdAmount || !trxId) { 
+                alert('Please enter amount and Order ID!'); 
+                return; 
+            }
+
+            if(!userId) {
+                alert('User not logged in! Please login again.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/deposit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        userId: userId, 
+                        amount: parseFloat(bdtAmount), 
+                        binancePayId: trxId 
+                    })
+                });
+                
+                const data = await response.json();
+                alert(data.message || 'Deposit request submitted!');
+
+                if(response.ok) {
+                    // সাবমিট সফল হলে ফিল্ডগুলো ফাঁকা করে দেওয়া
+                    document.getElementById('depositUsd').value = '';
+                    document.getElementById('trxIdInput').value = '';
+                    document.getElementById('convertedBdt').innerText = '0';
+                    switchTab('home'); // হোম পেজে নিয়ে যাওয়া
+                }
+            } catch (err) { 
+                console.error('Deposit error:', err);
+                alert('Server connection error!'); 
+            }
         }
 
         async function claimCheckIn() {
@@ -181,4 +218,4 @@
         }
     </script>
 </body>
-                  </html>
+</html>
